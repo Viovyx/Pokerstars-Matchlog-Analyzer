@@ -133,5 +133,6 @@ def parseGame(game):
     }
 
 
-game = games[0]
-print(json.dumps(parseGame(game), indent=4))
+game = games[200]
+with open("match.json", "w") as f:
+    f.write(json.dumps(parseGame(game), indent=4))
