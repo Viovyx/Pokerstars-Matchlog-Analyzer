@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
+# Must have an .env in same dir with var LOG that has a string with the MatchLog.txt you want to analyze
+# Example for default location in steam:
+# LOG="C:\...\SteamLibrary\steamapps\common\PokerStars VR\PokerStarsVR_Data\StreamingAssets\MatchLog.txt"
 logfile = os.getenv("LOG")
 
 # Convert file into array of games
