@@ -125,6 +125,8 @@ def parseGame(game):
     raw_table_info = game[1]
     table_info = parseTableInfo(raw_table_info)
 
+    # TODO: Rounds parsing etc.
+
     return {
         "rounds": rounds,
         "gameInfo": game_info,
@@ -133,6 +135,6 @@ def parseGame(game):
     }
 
 
-game = games[200]
+game = games[250]
 with open("match.json", "w") as f:
     f.write(json.dumps(parseGame(game), indent=4))
