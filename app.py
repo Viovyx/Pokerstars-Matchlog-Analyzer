@@ -104,10 +104,30 @@ def parseRoles(game, rounds, players):
     }
 
 
+def parseRounds(game, game_info, rounds, roles, players):
+    round_names = list(rounds.keys())
+    for current_round in round_names:
+        current_round_i = round_names.index(current_round, 0, len(round_names))
+        next_round = round_names[
+            current_round_i + (1 if current_round_i != len(round_names) - 1 else 0)
+        ]
+
+        start_i = rounds[current_round] + 1
+        end_i = rounds[next_round] if next_round != current_round else len(game)
+
+        # TODO: Parse actions for each round
+
+        # Debug prints:
+        print(current_round)
+        for i in range(start_i, end_i):
+            print(game[i])
+        print("\n")
+
+
 def parseGame(game):
     # Each round of the game is seperated by '*** {round-name} ***'
     # This gives a list of the rounds back with the corresponding index
-    rounds = findRounds(game)
+    rounds_i = findRounds(game)
 
     # ex.:
     # Seat 3: quaq_ (5000 in chips)
@@ -116,10 +136,10 @@ def parseGame(game):
     # Seat 6: Viovyx (3750 in chips)
     # Seat 8: Eon.Sanders (78750 in chips)
     players = parsePlayers(
-        game, rounds
+        game, rounds_i
     )  # Rounds is needed to determine indexes (explained more inside function)
 
-    roles = parseRoles(game, rounds, players)
+    roles = parseRoles(game, rounds_i, players)
 
     # ex. PokerStars Hand: Hold'em No Limit (25/50) - 2025/12/24 15:56:45 UTC
     raw_type_info = game[0]
@@ -129,14 +149,15 @@ def parseGame(game):
     raw_table_info = game[1]
     table_info = parseTableInfo(raw_table_info)
 
-    # TODO: Rounds parsing etc.
+    rounds = parseRounds(game, game_info, rounds_i, roles, players)
 
     return {
-        "rounds": rounds,
+        "rounds": rounds_i,
         "gameInfo": game_info,
         "tableInfo": table_info,
         "roles": roles,
         "players": players,
+        "playthrough": rounds,
     }
 
 
