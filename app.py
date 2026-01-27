@@ -87,11 +87,11 @@ def parsePlayers(game, rounds):
 
 def parseRoles(game, rounds, players):
     sb_i = rounds["HOLE CARDS"] - 2
-    sb_name = game[sb_i].split(" ")[0].strip()
+    sb_name = game[sb_i].split(" posts")[0].strip()
     sb_seat = [player["seat"] for player in players if player["name"] == sb_name][0]
 
     bb_i = rounds["HOLE CARDS"] - 1
-    bb_name = game[bb_i].split(" ")[0].strip()
+    bb_name = game[bb_i].split(" posts")[0].strip()
     bb_seat = [player["seat"] for player in players if player["name"] == bb_name][0]
 
     # Dealer seat is stored in line 2 "gameTableInfo"
@@ -140,6 +140,6 @@ def parseGame(game):
     }
 
 
-game = games[154]
+game = games[150]
 with open("match.json", "w") as f:
     f.write(json.dumps(parseGame(game), indent=4))
