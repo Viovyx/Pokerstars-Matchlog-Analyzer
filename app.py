@@ -13,7 +13,7 @@ logfile = os.getenv("LOG")
 # Convert file into array of games
 # Each game is an array of itself for each line
 with open(logfile, "r") as log:
-    games = [game.split("\n") for game in log.read().split("\n\n")[:-1]]
+    games = [game.strip().split("\n") for game in log.read().split("\n\n")[:-1]]
 
 
 def findRounds(game):
@@ -140,6 +140,6 @@ def parseGame(game):
     }
 
 
-game = games[150]
+game = games[149]
 with open("match.json", "w") as f:
     f.write(json.dumps(parseGame(game), indent=4))
