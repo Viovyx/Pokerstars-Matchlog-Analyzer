@@ -63,15 +63,7 @@ def parsePlayers(game, rounds):
     # There is no clear indicator of where the listing of players ends
     # I use the first round "HOLE CARDS" as a reference to find these indexes
     player_max_i = rounds["HOLE CARDS"] - 3
-
     player_sb_i = rounds["HOLE CARDS"] - 2
-    player_sb_name = game[player_sb_i].split(" ")[0].strip()
-
-    player_bb_i = rounds["HOLE CARDS"] - 1
-    player_bb_name = game[player_bb_i].split(" ")[0].strip()
-
-    # Dealer seat is stored in line 2 "gameTableInfo"
-    player_dealer_seat = int(game[1].split("Seat #")[1].split(" ")[0].strip()) + 1
 
     # Starts from index 2 since the first 2 lines are for game&table info
     # Ends before the smallblind line index
@@ -82,24 +74,34 @@ def parsePlayers(game, rounds):
         name = player_data.split(": ")[1].split(" (")[0].strip()
         chips = int(player_data.split(f"{name} (")[1].split(" ")[0].strip())
 
-        is_small_blind = 1 if name == player_sb_name else 0
-        is_big_blind = 1 if name == player_bb_name else 0
-        is_dealer = 1 if seat == player_dealer_seat else 0
-
         players.append(
             {
                 "seat": seat,
                 "name": name,
                 "startingChips": chips,
-                "roles": {
-                    "smallblind": is_small_blind,
-                    "bigblind": is_big_blind,
-                    "dealer": is_dealer,
-                },
             }
         )
 
     return players
+
+
+def parseRoles(game, rounds, players):
+    sb_i = rounds["HOLE CARDS"] - 2
+    sb_name = game[sb_i].split(" ")[0].strip()
+    sb_seat = [player["seat"] for player in players if player["name"] == sb_name][0]
+
+    bb_i = rounds["HOLE CARDS"] - 1
+    bb_name = game[bb_i].split(" ")[0].strip()
+    bb_seat = [player["seat"] for player in players if player["name"] == bb_name][0]
+
+    # Dealer seat is stored in line 2 "gameTableInfo"
+    dealer_seat = int(game[1].split("Seat #")[1].split(" ")[0].strip()) + 1
+
+    return {
+        "dealerSeat": dealer_seat,
+        "smallblindSeat": sb_seat,
+        "bigblindSeat": bb_seat,
+    }
 
 
 def parseGame(game):
@@ -117,6 +119,8 @@ def parseGame(game):
         game, rounds
     )  # Rounds is needed to determine indexes (explained more inside function)
 
+    roles = parseRoles(game, rounds, players)
+
     # ex. PokerStars Hand: Hold'em No Limit (25/50) - 2025/12/24 15:56:45 UTC
     raw_type_info = game[0]
     game_info = parseGameInfo(raw_type_info)
@@ -131,10 +135,11 @@ def parseGame(game):
         "rounds": rounds,
         "gameInfo": game_info,
         "tableInfo": table_info,
+        "roles": roles,
         "players": players,
     }
 
 
-game = games[250]
+game = games[154]
 with open("match.json", "w") as f:
     f.write(json.dumps(parseGame(game), indent=4))
