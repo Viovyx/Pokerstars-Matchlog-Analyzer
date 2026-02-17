@@ -58,12 +58,55 @@ def parseTableInfo(gameTableInfo):
     return {"tableName": table_name, "tableMaxPlayers": table_max_players}
 
 
+def parseCards(card_string, new_card=""):
+    cards_str = card_string.strip("[]").split(" ")
+
+    if new_card != "":
+        cards_str.append(new_card.strip("[]"))
+
+    cards = []
+    for card in cards_str:
+        match card[0]:
+            case "t":
+                number = 10
+            case "j":
+                number = 11
+            case "q":
+                number = 12
+            case "k":
+                number = 13
+            case _:
+                number = int(card[0])
+
+        match card[1]:
+            case "c":
+                suite = "clubs"
+            case "s":
+                suite = "spades"
+            case "h":
+                suite = "hearts"
+            case "d":
+                suite = "diamonds"
+        cards.append({"suite": suite, "number": number})
+
+    return cards
+
+
 def parsePlayers(game, rounds):
     players = []
     # There is no clear indicator of where the listing of players ends
     # I use the first round "HOLE CARDS" as a reference to find these indexes
     player_max_i = rounds["HOLE CARDS"] - 3
     player_sb_i = rounds["HOLE CARDS"] - 2
+
+    # Player who the logs are from (shows card info)
+    print(game[rounds["HOLE CARDS"] + 1])
+    active_player_name = (
+        game[rounds["HOLE CARDS"] + 1].split("Dealt to ")[1].split(" [")[0]
+    )
+    active_player_cards = parseCards(
+        game[rounds["HOLE CARDS"] + 1].split(f"Dealt to {active_player_name} ")[1]
+    )
 
     # Starts from index 2 since the first 2 lines are for game&table info
     # Ends before the smallblind line index
@@ -74,13 +117,21 @@ def parsePlayers(game, rounds):
         name = player_data.split(": ")[1].split(" (")[0].strip()
         chips = int(player_data.split(f"{name} (")[1].split(" ")[0].strip())
 
-        players.append(
-            {
+        if active_player_name != name:
+            player = {
                 "seat": seat,
                 "name": name,
                 "startingChips": chips,
             }
-        )
+        else:
+            player = {
+                "seat": seat,
+                "name": name,
+                "startingChips": chips,
+                "cards": active_player_cards,
+            }
+
+        players.append(player)
 
     return players
 
