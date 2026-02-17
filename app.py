@@ -100,7 +100,6 @@ def parsePlayers(game, rounds):
     player_sb_i = rounds["HOLE CARDS"] - 2
 
     # Player who the logs are from (shows card info)
-    print(game[rounds["HOLE CARDS"] + 1])
     active_player_name = (
         game[rounds["HOLE CARDS"] + 1].split("Dealt to ")[1].split(" [")[0]
     )
