@@ -155,6 +155,8 @@ def parseRoles(game, rounds, players):
 
 
 def parseRounds(game, game_info, rounds, roles, players):
+    playthough = {}
+
     round_names = list(rounds.keys())
     for current_round in round_names:
         current_round_i = round_names.index(current_round, 0, len(round_names))
@@ -165,13 +167,80 @@ def parseRounds(game, game_info, rounds, roles, players):
         start_i = rounds[current_round] + 1
         end_i = rounds[next_round] if next_round != current_round else len(game)
 
-        # TODO: Parse actions for each round
+        played_round = []
+        match current_round:
+            case "HOLE CARDS":
+                start_i += 1  # Ignore "dealt to" line
+            case "RIVER":
+                if round_names.index("SHOWDOWN", 0, len(round_names)) == -1:
+                    end_i -= 1  # Ignore "collected" line
+                    # TODO: Add "collected" line manually
+
+        match current_round:
+            case "SHOWDOWN":
+                # TODO: add showdown handling
+                break
+            case "SUMMARY":
+                # TODO: add summary handling
+                break
+            case _:
+                # Find action that is being taken
+                for i in range(start_i, end_i):
+                    action_line = game[i]
+                    # Check if all in
+                    if action_line[-2:] == "in":
+                        action_line = action_line.split(" and is all in")[0]
+                        all_in = True
+                    else:
+                        all_in = False
+
+                    # bets, calls, raises, folds or checks
+                    user = action_line.split(": ")[0]
+                    action = action_line.split(f"{user}: ")[1].split(" ")[0]
+
+                    match action:
+                        case "calls":
+                            amount = int(action_line.split(f"{action} ")[1])
+                            total = 0
+                        case "bets":
+                            amount = int(action_line.split(f"{action} ")[1])
+                            total = 0
+                        case "raises":
+                            amount = int(
+                                action_line.split(f"{action} ")[1].split(" to ")[0]
+                            )
+                            total = int(
+                                action_line.split(f"{action} ")[1].split(" to ")[1]
+                            )
+                        case _:
+                            amount = 0
+                            total = 0
+
+                    if total > 0:
+                        played_round.append(
+                            {
+                                "user": user,
+                                "action": action,
+                                "amount": amount,
+                                "total": total,
+                            }
+                        )
+                    elif amount > 0:
+                        played_round.append(
+                            {"user": user, "action": action, "amount": amount}
+                        )
+                    else:
+                        played_round.append({"user": user, "action": action})
 
         # Debug prints:
-        print(current_round)
-        for i in range(start_i, end_i):
-            print(game[i])
-        print("\n")
+        # print(current_round)
+        # for i in range(start_i, end_i):
+        #     print(game[i])
+        # print("\n")
+
+        playthough[current_round] = played_round
+
+    return playthough
 
 
 def parseGame(game):
@@ -211,6 +280,6 @@ def parseGame(game):
     }
 
 
-game = games[149]
+game = games[201]
 with open("match.json", "w") as f:
     f.write(json.dumps(parseGame(game), indent=4))
